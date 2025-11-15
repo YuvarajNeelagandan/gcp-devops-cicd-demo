@@ -1,0 +1,29 @@
+# GCP Cloud Build CI/CD Configuration
+# This file runs automated tests on every push
+
+steps:
+  # Step 1: Install Python dependencies
+  - name: 'python:3.9'
+    entrypoint: 'pip'
+    args: ['install', '-r', 'requirements.txt']
+  
+  # Step 2: Run pytest tests
+  - name: 'python:3.9'
+    entrypoint: 'pytest'
+    args: ['-v', '--tb=short', 'tests/']
+  
+  # Step 3: Generate test report (optional)
+  - name: 'python:3.9'
+    entrypoint: 'pytest'
+    args: ['--html=report.html', '--self-contained-html', 'tests/']
+
+# Store test artifacts in Cloud Storage
+artifacts:
+  objects:
+    location: 'gs://${PROJECT_ID}_test-reports/'
+    paths: ['report.html']
+
+# Build timeout (5 minutes is plenty for tests)
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: 'E2_HIGHCPU_8'  # Free tier compatible
